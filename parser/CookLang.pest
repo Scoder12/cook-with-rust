@@ -1,38 +1,29 @@
-//
-// Created by intellij-pest on 2021-10-27
-// CookLang
-// Author: hannes
-//
+// entrypoint
+recipe = { SOI ~ line ~ (NEWLINE ~ line)* ~ EOI }
 
-cook_lang = {
-  SOI ~
-// (comment? ~ NEWLINE)* ~
-// (metadata? ~ whitespace? ~ comment? ~ NEWLINE)*  ~
-// (line? ~ whitespace? ~ comment? ~ NEWLINE)* ~
-  line_wrapper* ~
-  EOI
-}
-whitespace = _{ " " }
-comment = {"//" ~ (" ")? ~ text }
-// COMMENT = _{ comment }
-name = { ASCII_ALPHANUMERIC+ }
-text = { (ASCII_ALPHANUMERIC | "-" | " ")* }
-ingredient_separator = { "|" }
-amount = _{ (number ~ ingredient_separator ~ amount) | number }
-value = { ( amount | name ) }
-num_value = { ASCII_DIGIT+ }
-number = { (("/" ~ num_value) | num_value)+ }
-scaling = { "*" }
-amount_bracket = _{ "{" ~ amount ~ scaling? ~ unit_amount? ~ "}"}
-unit = { ASCII_ALPHANUMERIC+ }
-unit_amount = _{ "%" ~ unit }
-bracket = _{ "{}" }
-modified = {"(" ~ text ~ ")"}
-white_text = _{ whitespace ~ text ~ white_text? }
-cookware = { "#" ~ name ~ (white_text ~ bracket)? }
-property = { name ~ whitespace? ~ ":" ~ whitespace? ~ value}
-metadata = { ">>" ~ whitespace? ~ property}
-ingredient = { "@" ~ name ~ ((whitespace ~ text)+ ~ (amount_bracket | bracket) | amount_bracket?) ~ modified? }
-timer = { "~" ~ amount_bracket}
-line = {!(">>") ~ (ingredient | cookware | timer | NEWLINE | ANY )+ }
-line_wrapper = _{ (comment? ~ NEWLINE? ~ (metadata | line) ~ whitespace? ~ comment? ~ NEWLINE?) | comment ~ NEWLINE | NEWLINE+ }
+// special rules
+WHITESPACE = _{ " " | "\t" }
+text = _{ !"\n" ~ ANY }
+COMMENT = _{ "//" ~ text* }
+
+line = _{ (">>" ~ metadata_item) | step }
+
+metadata_item = { metadata_key ~ ":" ~ metadata_value }
+metadata_key = { ASCII_ALPHANUMERIC+ }
+metadata_value = { text* }
+
+step = { step_content ~ (inline_item ~ step_content)* }
+step_content = { (!"@" ~ !"{" ~ !"#" ~ text)* }
+inline_item = { ingredient | cookware }
+
+ingredient = _{ "@" ~ (long_ingredient | short_ingredient) }
+short_ingredient = @{ ASCII_ALPHANUMERIC+ } // 1 word
+long_ingredient = { ingredient_name ~ "{" ~ quantity ~ "}" }
+ingredient_name = { (!"{" ~ text)+ }
+quantity = { (!"}" ~ text)* }
+
+// very similar to ingredient
+cookware = _{ "#" ~ (long_cookware | short_cookware) ~ }
+long_cookware = _{ cookware_name ~ "{}" }
+cookware_name = { (!"{" ~ text)+ }
+// TODO: can cookware have a quantity?

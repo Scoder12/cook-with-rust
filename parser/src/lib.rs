@@ -141,6 +141,14 @@ impl Add for Amount {
     }
 }
 
+type Pesult<T> = Result<T, pest_consume::Error<Rule>>;
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+
+#[pest_consume::parser]
+impl Parser {
+    fn cook_lang(input: Node) -> Pesult<Recipe> {}
+}
+
 /// Parse the input into a [Recipe].
 pub fn parse(inp: &str) -> Result<Recipe, Box<dyn std::error::Error>> {
     let successful_parse: Pair<_> = match CookParser::parse(Rule::cook_lang, inp) {
