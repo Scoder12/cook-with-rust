@@ -10,12 +10,12 @@ extern crate pest_derive;
 
 use pest::iterators::Pair;
 use pest::Parser;
+use serde::{Deserialize, Serialize};
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::ops::Add;
 use std::str::FromStr;
 use uuid::Uuid;
-use serde::{Serialize, Deserialize};
 
 #[derive(Parser)]
 #[grammar = "../CookLang.pest"]
@@ -141,7 +141,6 @@ impl Add for Amount {
     }
 }
 
-
 /// Parse the input into a [Recipe].
 pub fn parse(inp: &str) -> Result<Recipe, Box<dyn std::error::Error>> {
     let successful_parse: Pair<_> = match CookParser::parse(Rule::cook_lang, inp) {
@@ -192,7 +191,6 @@ pub fn parse(inp: &str) -> Result<Recipe, Box<dyn std::error::Error>> {
         } else if e.as_rule() == Rule::comment {
             println!("Replacing comment = {}", e.as_str());
             source_edited = source_edited.replace(e.as_str(), "");
-
         } else {
             // println!("Line => {:?}", e);
             let _line = e.as_str().to_string().clone();
@@ -398,10 +396,9 @@ pub fn parse(inp: &str) -> Result<Recipe, Box<dyn std::error::Error>> {
     let recipe = Recipe {
         source,
         metadata,
-        instruction: source_edited
+        instruction: source_edited,
     };
     Ok(recipe)
-
 }
 
 #[cfg(test)]
