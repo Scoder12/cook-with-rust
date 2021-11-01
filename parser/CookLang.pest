@@ -6,24 +6,31 @@ WHITESPACE = _{ " " | "\t" }
 text = _{ !"\n" ~ ANY }
 COMMENT = _{ "//" ~ text* }
 
-line = _{ (">>" ~ metadata_item) | step }
+line = _{ metadata_item | step | "" }
 
-metadata_item = { metadata_key ~ ":" ~ metadata_value }
-metadata_key = { ASCII_ALPHANUMERIC+ }
-metadata_value = { text* }
+metadata_item = { ">>" ~ metadata_key ~ ":" ~ metadata_value }
+metadata_key = @{ ASCII_ALPHANUMERIC+ }
+metadata_value = @{ text* }
 
-step = { step_content ~ (inline_item ~ step_content)* }
-step_content = { (!"@" ~ !"{" ~ !"#" ~ text)* }
-inline_item = { ingredient | cookware }
+step = ${ step_part+ }
+step_part = ${ ingredient | cookware | timer | step_content }
+step_content = @{ inline_name }
 
-ingredient = _{ "@" ~ (long_ingredient | short_ingredient) }
+inline_name = @{ (!"\n" ~ !"{" ~ !"@" ~ !"#" ~ !"~" ~ ANY)+ }
+
+ingredient = { "@" ~ (long_ingredient | short_ingredient) }
 short_ingredient = @{ ASCII_ALPHANUMERIC+ } // 1 word
-long_ingredient = { ingredient_name ~ "{" ~ quantity ~ "}" }
-ingredient_name = { (!"{" ~ text)+ }
-quantity = { (!"}" ~ text)* }
+long_ingredient = { inline_name ~ "{" ~ quantity ~ "}" }
+ingredient_name = @{ inline_name }
+quantity = @{ (!"}" ~ text)* }
 
 // very similar to ingredient
-cookware = _{ "#" ~ (long_cookware | short_cookware) ~ }
-long_cookware = _{ cookware_name ~ "{}" }
-cookware_name = { (!"{" ~ text)+ }
-// TODO: can cookware have a quantity?
+cookware = { "#" ~ (long_cookware | short_cookware) }
+long_cookware = { inline_name ~ "{}" }
+// TODO: can cookware have a quantity? https://github.com/cooklang/spec/issues/18
+short_cookware = @{ ASCII_ALPHANUMERIC+ }
+
+timer = { "~{" ~ timer_duration ~ "%" ~ timer_unit ~ "}"  }
+// TODO: Update based on status of https://github.com/cooklang/spec/issues/19
+timer_duration = { ASCII_DIGIT+ }
+timer_unit = { "seconds" | "minutes" }
