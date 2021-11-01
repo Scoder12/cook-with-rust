@@ -4,6 +4,14 @@
 // Author: hannes
 //
 
+cook_lang = {
+  SOI ~
+// (comment? ~ NEWLINE)* ~
+// (metadata? ~ whitespace? ~ comment? ~ NEWLINE)*  ~
+// (line? ~ whitespace? ~ comment? ~ NEWLINE)* ~
+  line_wrapper* ~
+  EOI
+}
 whitespace = _{ " " }
 comment = {"//" ~ (" ")? ~ text }
 // COMMENT = _{ comment }
@@ -28,11 +36,3 @@ ingredient = { "@" ~ name ~ ((whitespace ~ text)+ ~ (amount_bracket | bracket) |
 timer = { "~" ~ amount_bracket}
 line = {!(">>") ~ (ingredient | cookware | timer | NEWLINE | ANY )+ }
 line_wrapper = _{ (comment? ~ NEWLINE? ~ (metadata | line) ~ whitespace? ~ comment? ~ NEWLINE?) | comment ~ NEWLINE | NEWLINE+ }
-cook_lang = {
-SOI ~
-// (comment? ~ NEWLINE)* ~
-// (metadata? ~ whitespace? ~ comment? ~ NEWLINE)*  ~
-// (line? ~ whitespace? ~ comment? ~ NEWLINE)* ~
-line_wrapper* ~
-EOI
- }
