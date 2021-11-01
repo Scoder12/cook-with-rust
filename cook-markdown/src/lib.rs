@@ -1,6 +1,5 @@
-use std::ops::Not;
 use cook_with_rust_parser::*;
-
+use std::ops::Not;
 
 pub fn recipe_to_markdown(recipe: &Recipe) -> String {
     let mut ingredient_specifier_iter = recipe.metadata.ingredients_specifiers.iter();
@@ -16,24 +15,20 @@ pub fn recipe_to_markdown(recipe: &Recipe) -> String {
         let ingredients = recipe.metadata.ingredients.values();
         ingredients.for_each(|e| {
             let amount = match &e.amount {
-                Some(d) => {
-                    match d {
-                        Amount::Multi(dd) => {
-                            format!("servings * {}", dd)
-                        }
-                        Amount::Servings(dd) => {
-                            let mut servings = String::new();
-                            dd.iter().for_each(|a| {
-                                servings.push_str(&a.to_string());
-                                servings.push('|');
-                            });
-                            servings.pop();
-                            servings
-                        }
-                        Amount::Single(dd) => {
-                            dd.to_string()
-                        }
+                Some(d) => match d {
+                    Amount::Multi(dd) => {
+                        format!("servings * {}", dd)
                     }
+                    Amount::Servings(dd) => {
+                        let mut servings = String::new();
+                        dd.iter().for_each(|a| {
+                            servings.push_str(&a.to_string());
+                            servings.push('|');
+                        });
+                        servings.pop();
+                        servings
+                    }
+                    Amount::Single(dd) => dd.to_string(),
                 },
                 None => "-".to_string(),
             };
@@ -57,7 +52,11 @@ pub fn recipe_to_markdown(recipe: &Recipe) -> String {
     recipe.instruction.chars().for_each(|char| {
         if char == '@' {
             let insert_ingredient = ingredient_specifier_iter.next().unwrap();
-            let ingredient_referenced = recipe.metadata.ingredients.get(&insert_ingredient.ingredient).unwrap();
+            let ingredient_referenced = recipe
+                .metadata
+                .ingredients
+                .get(&insert_ingredient.ingredient)
+                .unwrap();
             let ingredient_name = &ingredient_referenced.name;
             let ingredient_unit = match &ingredient_referenced.unit {
                 None => "".to_string(),
@@ -65,7 +64,7 @@ pub fn recipe_to_markdown(recipe: &Recipe) -> String {
                     let mut res = String::from(' ');
                     res.push_str(d.as_str());
                     res
-                },
+                }
             };
             let ingredient_amount = match &insert_ingredient.amount_in_step {
                 Amount::Multi(d) => {
@@ -89,7 +88,10 @@ pub fn recipe_to_markdown(recipe: &Recipe) -> String {
                     res
                 }
             };
-            let insert_string = format!("__{}{}{}__", ingredient_name, ingredient_amount, ingredient_unit);
+            let insert_string = format!(
+                "__{}{}{}__",
+                ingredient_name, ingredient_amount, ingredient_unit
+            );
             result_string += &insert_string;
         } else if char == '#' {
             result_string.push_str("_");
@@ -112,13 +114,12 @@ pub fn recipe_to_markdown(recipe: &Recipe) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
-    use cook_with_rust_parser::parse;
     use crate::recipe_to_markdown;
+    use cook_with_rust_parser::parse;
 
     #[test]
     fn it_works() {
-        let inp = read_to_string("../spec/examples/Coffee Souffle.cook").unwrap();
+        let inp = include_str!("../../spec/examples/Coffee Souffle.cook");
         let recipe = parse(&inp).unwrap();
 
         let _result = recipe_to_markdown(&recipe);
