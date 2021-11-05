@@ -1,22 +1,26 @@
 // entrypoint
-recipe = { SOI ~ line ~ (NEWLINE ~ line)* ~ EOI }
+recipe = ${ SOI ~ recipe_main ~ EOI }
+recipe_main = ${ optional_line ~ (NEWLINE ~ optional_line)* }
 
 // special rules
 WHITESPACE = _{ " " | "\t" }
-text = _{ !"\n" ~ ANY }
+text = _{ !"\n" ~ !WHITESPACE ~ ANY }
 COMMENT = _{ "//" ~ text* }
 
-line = _{ metadata_item | step | "" }
+optional_line = _{ line | WHITESPACE* }
+line = ${ ( metadata_item | step ) ~ WHITESPACE* }
 
-metadata_item = { ">>" ~ metadata_key ~ ":" ~ metadata_value }
+metadata_item = !{ WHITESPACE* ~ ">>" ~ metadata_key ~ ":" ~ metadata_value }
 metadata_key = @{ ASCII_ALPHANUMERIC+ }
-metadata_value = @{ text* }
+metadata_value = @{ inline_name }
 
 step = ${ step_part+ }
-step_part = ${ ingredient | cookware | timer | step_content }
+step_part = ${ ingredient | cookware | timer | step_content_wrapper }
+step_content_wrapper = _{ WHITESPACE* ~ step_content ~ WHITESPACE* }
 step_content = @{ inline_name }
 
-inline_name = @{ (!"\n" ~ !"{" ~ !"@" ~ !"#" ~ !"~" ~ ANY)+ }
+inline_name = @{ (WHITESPACE* ~ inline_name_content)+ }
+inline_name_content = @{ (!"{" ~ !"@" ~ !"#" ~ !"~" ~ text)+ }
 
 ingredient = { "@" ~ (long_ingredient | short_ingredient) }
 short_ingredient = @{ ASCII_ALPHANUMERIC+ } // 1 word
