@@ -4,7 +4,7 @@
 //! The implementation is nearly fully complete. Only image tags are missing. They are just ignored by now.
 //!
 
-use super::ast::{Cookware, Ingredient, Metadata, RecipeLine, Step, StepItem, Timer};
+use super::ast::{Cookware, Ingredient, Metadata, RecipeLine, StepItem, Timer};
 use pest_consume::{match_nodes, Parser};
 
 #[derive(pest_derive::Parser)]

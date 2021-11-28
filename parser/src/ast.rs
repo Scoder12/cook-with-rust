@@ -1,3 +1,5 @@
+type Step<'a> = Vec<StepItem<'a>>;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum RecipeLine<'a> {
     Metadata(Metadata<'a>),
