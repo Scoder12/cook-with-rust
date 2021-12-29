@@ -24,9 +24,10 @@ inline_name_content = @{ (!"{" ~ !"@" ~ !"#" ~ !"~" ~ text)+ }
 
 ingredient = { "@" ~ (long_ingredient | short_ingredient) }
 short_ingredient = @{ ASCII_ALPHANUMERIC+ } // 1 word
-long_ingredient = { inline_name ~ "{" ~ quantity ~ "}" }
-ingredient_name = @{ inline_name }
-quantity = @{ (!"}" ~ text)* }
+long_ingredient = { inline_name ~ "{" ~ amount ~ "}" }
+amount = { quantity }
+quantity = { (!"%" ~ text)+ }
+unit = { text* }
 
 // very similar to ingredient
 cookware = { "#" ~ (long_cookware | short_cookware) }
